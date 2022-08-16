@@ -7,18 +7,6 @@ import csv
 import uuid
 import datetime
 import os
-import phoenixdb
-import phoenixdb.cursor
-
-
-database_url = "https://cod--1csdunit3mbci-gateway0.se-sandb.a465-9q4k.cloudera.site/cod--1csdunit3mbci/cdp-proxy-api/avatica/?serialization=PROTOBUF&authentication=BASIC"
-#conn = phoenixdb.connect(database_url, autocommit=True, user='ledel', password='BadPass#1')
-
-#cursor = conn.cursor()
-
-#cursor.execute("SHOW TABLES")
-#print(cursor.fetchall())
-
 
 #session_id,calling_msisdn,called_msisdn,date_beg,date_end,duration,call_type,call_result,calling_net_type,radio_calling,cell_calling,lon_calling,lat_calling,called_net_type,radio_called,cell_called,lon_called,lat_called
 #303c36b9-7fb2-4b4e-a352-0be40ead11d5,33757150547,33767150516,2022-08-15 16:08:25.223656,2022-08-15 16:11:07.223656,0,SMS,SUCCESS,21,GSM,10494,2.976922,50.216257,8,GSM,29403,2.453293,48.814949
