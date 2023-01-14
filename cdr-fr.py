@@ -1,12 +1,14 @@
 # coding: utf-8
 
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import random
 import csv
 import uuid
 import datetime
 import os
+import sys
+import gzip
 
 #session_id,calling_msisdn,called_msisdn,date_beg,date_end,duration,call_type,call_result,calling_net_type,radio_calling,cell_calling,lon_calling,lat_calling,called_net_type,radio_called,cell_called,lon_called,lat_called
 #303c36b9-7fb2-4b4e-a352-0be40ead11d5,33757150547,33767150516,2022-08-15 16:08:25.223656,2022-08-15 16:11:07.223656,0,SMS,SUCCESS,21,GSM,10494,2.976922,50.216257,8,GSM,29403,2.453293,48.814949
@@ -20,11 +22,7 @@ debug = 0
 # Read in the French area codes
 #============================================================================================================
 def get_area_codes():
-    
-    print("Getting area codes")
-
     f = open(os.getcwd() + "/fr_area_codes.csv", "r", encoding="utf-8-sig")
-
     csvfile = csv.reader(f)
     areacodes = []
 
@@ -32,10 +30,7 @@ def get_area_codes():
         if (debug):
             print (x)
         areacodes.append(x[0])
-
     f.close()
-
-    print("Number of area codes is", len(areacodes))
 
     return areacodes
 
@@ -44,10 +39,7 @@ def get_area_codes():
 #============================================================================================================
 def get_country_codes():
 
-    print("Getting country codes")
-
     f = open(os.getcwd() +"/country_codes.csv", "r", encoding="utf-8-sig")
-
     csvfile = csv.reader(f)
     countrycodes = []
 
@@ -55,14 +47,9 @@ def get_country_codes():
         if (debug):
             print (x)
         countrycodes.append(x[0])
-
     f.close()
     
-    print("Number of country codes is", len(countrycodes))
-
     return countrycodes
-
-
 
 #============================================================================================================
 # Small function that return TRUE with a specified probability
@@ -73,7 +60,6 @@ def probability(p):
     # Get a number between 1 and 200
     
     r = random.random() * 100
-    
     if (r < p):
         rv = 1
     else:
@@ -90,21 +76,17 @@ def probability(p):
 #============================================================================================================
 
 def get_fr_msisdn(areacodes):
-
     cc = '0033'
     ac = []
 
     if (probability(90)):
         ac = str(random.choice(['6', '7'])) 
-       
-      
     elif (probability(25)):
         ac =  areacodes[random.randint(0, len(areacodes)-1)]
-        
     else:
         ac = str(random.choice([ '6', '7'])) 
-    
-    msisdn = cc + ac + str(random.randint(10, 99)) + '15' + '05'+str(random.randint(10, 99))
+    #msisdn = cc + ac + str(random.randint(10, 99)) + '15' + '05'+str(random.randint(10, 99))
+    msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
     net_type = str(random.choice(['1','2','8','9','10','15','20','21']))     
     return msisdn, net_type
 
@@ -115,17 +97,13 @@ def get_fr_msisdn(areacodes):
 # 5% of the time get a valid countro code followed by 10 digits
 #============================================================================================================
 def get_any_msisdn(areacodes, countrycodes):
-    
     if (probability(96)):
         msisdn = get_fr_msisdn(areacodes)
     else:
         cc = countrycodes[random.randint(0, len(countrycodes)-1)]
         msisdn = '0'+ cc + str(random.randint(10000000, 99999999))
-  
     return msisdn
 
-  
-  
 def get_network_type():
     orange=[]
     free=[]
@@ -147,16 +125,13 @@ def get_network_type():
 
       return orange,sfr,free,bouygues
 
-
 #============================================================================================================
 # Construct any MSISDN, international allowed but mostly DZ
 # 95% of the time return a DZ MSISDN
 # 5% of the time get a valid country code followed by 10 digits
 #============================================================================================================
 def get_cdr(areacodes, countrycodes, date,x,y,z,w):
-    
     id = str(uuid.uuid4())
-    
     
     #start = datetime.datetime.now()
     start=date
@@ -165,7 +140,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
     calling_msisdn , calling_net_type  = get_fr_msisdn(areacodes)
     called_msisdn , called_net_type  = get_fr_msisdn(areacodes)
     #get_any_msisdn(areacodes, countrycodes)
-
     
     if (probability(80)):
         call_type = 'Voice'
@@ -182,9 +156,7 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
         call_result = 'FAILURE'
         duration = 0
         
-    
     if calling_net_type == '1' or calling_net_type == '2' :
-      
       array_calling=(random.choice(x))
       radio_calling=array_calling[0]
       mcc_calling=array_calling[1]
@@ -192,9 +164,7 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       cell_calling=array_calling[3]
       lon_calling=array_calling[4]
       lat_calling=array_calling[5]
-      
     elif calling_net_type == '8' or calling_net_type == '9' or calling_net_type == '10':
-      
       array_calling=(random.choice(y))
       radio_calling=array_calling[0]
       mcc_calling=array_calling[1]
@@ -202,9 +172,7 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       cell_calling=array_calling[3]
       lon_calling=array_calling[4]
       lat_calling=array_calling[5]
-    
     elif calling_net_type == '15' :
-      
       array_calling=(random.choice(z))
       radio_calling=array_calling[0]
       mcc_calling=array_calling[1]
@@ -212,7 +180,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       cell_calling=array_calling[3]
       lon_calling=array_calling[4]
       lat_calling=array_calling[5]
-
     else :
       array_calling=(random.choice(w))
       radio_calling=array_calling[0]
@@ -223,7 +190,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       lat_calling=array_calling[5]
     
     if called_net_type == '1' or called_net_type == '2':
-      
       array_called=(random.choice(x))
       radio_called=array_called[0]
       mcc_called=array_called[1]
@@ -231,7 +197,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       cell_called=array_called[3]
       lon_called=array_called[4]
       lat_called=array_called[5]    
-    
     elif called_net_type == '8' or called_net_type == '9' or called_net_type == '10':    
       array_called=(random.choice(y))
       radio_called=array_called[0]
@@ -240,7 +205,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       cell_called=array_called[3]
       lon_called=array_called[4]
       lat_called=array_called[5]   
-      
     elif called_net_type == '15':
       array_called=(random.choice(z))
       radio_called=array_called[0]
@@ -258,7 +222,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
       lon_called=array_called[4]
       lat_called=array_called[5]   
       
-      
     #cdr = str(id) + ',' + calling_msisdn + ',' + called_msisdn + ','
     cdr = calling_msisdn + ',' + str(id) + ',' + called_msisdn + ','
     cdr = cdr + str(start) + ',' + str(end) + ',' + str(duration) + ','  + call_type + ','
@@ -268,55 +231,55 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
     
     return cdr
 
-  
 #============================================================================================================
-# set batches to the required number
-batches = 1
+print ("Number of arguments:", len(sys.argv), "arguments")
+print ("Argument List:", str(sys.argv))
 
-# set files_per_batch to the required number
-files_per_batch = 24
+#$ python3 test.py 20220312 100 24
+#Number of arguments: 4 arguments
+#Argument List: ['test.py', '20220312', '100', '24']
 
-# set records_per_file to the required number
+date = datetime.datetime.now()
+if len(sys.argv) >= 2:
+  date = datetime.datetime.strptime(str(sys.argv[1]), "%Y%m%d")
+
 records_per_file = 1000000
+if len(sys.argv) >= 3:
+  records_per_file = sys.argv[2]
+
+batches = 24
+if len(sys.argv) >= 4:
+  batches = sys.argv[3]
 
 x,y,z,w = get_network_type()
-# f = open("cdr.csv", "w")
 
 areacodes = get_area_codes ()
 countrycodes = get_country_codes()
 
-#cell_id = get_cell_id ()
-#print (cell_id)
 #============================================================================================================
-date = datetime.datetime.now ()
-for b in range(batches):
-   
-    
-    print(date)
-    
-    print ("Batch ", b)
-    #for f in range(files_per_batch):
-    filename = os.getcwd() +"/cdr/cdr-"+ str(date)+".csv" 
-    filename = os.getcwd() +"/cdr/cdr-"+ date.strftime("%Y%m%d_%H%M%S") +".csv" 
-    filename = os.getcwd() +"/cdr/cdr.csv"
-        
-    fh = open(filename, "w")
 
-    for l in range(records_per_file):
-            
-            start= date + datetime.timedelta(minutes =random.randint(1,59))
+#date = datetime.datetime.now ()
+print("Generating "+str(batches)+" files of "+str(records_per_file)+" CDRs for "+date.strftime("%Y%m%d"))
+
+start_process = datetime.datetime.now()
+for b in range(int(batches)):
+    print ("Batch #", b)
+    filename = os.getcwd() +"/cdr/cdr-"+ date.strftime("%Y%m%d") + "_" + f"{b:02d}" + ".csv"
+    #fh = open(filename, "w")
+    with gzip.open(filename +'.gz', 'wt') as fh:
+        for l in range(int(records_per_file)):
+            #start= date + datetime.timedelta(minutes =random.randint(1,59))
+            start = date.replace(hour=b, minute=random.randint(1,59))
             cdr = get_cdr(areacodes, countrycodes,start,x,y,z,w)
             fh.write(cdr + "\n")
-        
-    fh.close()
-              
-    cdrh =['session_id','calling_msisdn','called_msisdn', 'date_beg', 'date_end', 'duration','call_type', 'call_result', 'calling_net_type', 'radio_calling', 'cell_calling', 'lon_calling', 'lat_calling', 'called_net_type', 'radio_called', 'cell_called', 'lon_called', 'lat_called']
+    
+    #fh.close() 
+    #cdrh =['session_id','calling_msisdn','called_msisdn', 'date_beg', 'date_end', 'duration','call_type', 'call_result', 'calling_net_type', 'radio_calling', 'cell_calling', 'lon_calling', 'lat_calling', 'called_net_type', 'radio_called', 'cell_called', 'lon_called', 'lat_called']
       
-    print (filename)
-    file = pd.read_csv(filename)
-    #file.to_csv(filename, header=cdrh, index=False)
-    file.to_csv(filename, index=False)
-    date += datetime.timedelta(hours=1)
-        
-date2 = datetime.datetime.now()        
-print(date2)
+    #print (filename)
+    #file = pd.read_csv(filename)
+    #file.to_csv(filename, index=False)
+    #date += datetime.timedelta(hours=1)
+
+time_taken = datetime.datetime.now() - start_process
+print('Processed in: ',time_taken)
