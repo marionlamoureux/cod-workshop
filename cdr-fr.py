@@ -86,7 +86,8 @@ def get_fr_msisdn(areacodes):
     else:
         ac = str(random.choice([ '6', '7'])) 
     #msisdn = cc + ac + str(random.randint(10, 99)) + '15' + '05'+str(random.randint(10, 99))
-    msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
+    #msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
+    msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 12)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
     net_type = str(random.choice(['1','2','8','9','10','15','20','21']))     
     return msisdn, net_type
 
