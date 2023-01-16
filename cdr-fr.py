@@ -1,7 +1,5 @@
 # coding: utf-8
-
 import numpy as np
-#import pandas as pd
 import random
 import csv
 import uuid
@@ -31,14 +29,12 @@ def get_area_codes():
             print (x)
         areacodes.append(x[0])
     f.close()
-
     return areacodes
 
 #============================================================================================================
 # Read in the country codes
 #============================================================================================================
 def get_country_codes():
-
     f = open(os.getcwd() +"/country_codes.csv", "r", encoding="utf-8-sig")
     csvfile = csv.reader(f)
     countrycodes = []
@@ -48,17 +44,14 @@ def get_country_codes():
             print (x)
         countrycodes.append(x[0])
     f.close()
-    
     return countrycodes
 
 #============================================================================================================
 # Small function that return TRUE with a specified probability
 #============================================================================================================
 def probability(p):
-    
     # p is a percentage
     # Get a number between 1 and 200
-    
     r = random.random() * 100
     if (r < p):
         rv = 1
@@ -74,7 +67,6 @@ def probability(p):
 # If not 7 then normall choose an area code () and occasionally make a 4 digit area code up
 # then add a 6 digit number
 #============================================================================================================
-
 def get_fr_msisdn(areacodes):
     cc = '0033'
     ac = []
@@ -87,11 +79,10 @@ def get_fr_msisdn(areacodes):
         ac = str(random.choice([ '6', '7'])) 
     #msisdn = cc + ac + str(random.randint(10, 99)) + '15' + '05'+str(random.randint(10, 99))
     #msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
-    msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 12)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
+    msisdn = cc + ac + str(random.randint(10, 99)) + str(random.randint(10, 20)) + str(random.randint(10, 99)) + str(random.randint(10, 99))
     net_type = str(random.choice(['1','2','8','9','10','15','20','21']))     
     return msisdn, net_type
 
-# 
 #============================================================================================================    
 # Construct any MSISDN, international allowed but mostly UK
 # 95% of the time return a UK MSISDN
@@ -235,7 +226,6 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
 #============================================================================================================
 print ("Number of arguments:", len(sys.argv), "arguments")
 print ("Argument List:", str(sys.argv))
-
 #$ python3 test.py 20220312 100 24
 #Number of arguments: 4 arguments
 #Argument List: ['test.py', '20220312', '100', '24']
@@ -258,15 +248,12 @@ areacodes = get_area_codes ()
 countrycodes = get_country_codes()
 
 #============================================================================================================
-
-#date = datetime.datetime.now ()
 print("Generating "+str(batches)+" files of "+str(records_per_file)+" CDRs for "+date.strftime("%Y%m%d"))
 
 start_process = datetime.datetime.now()
 for b in range(int(batches)):
     print ("Batch #", b)
     filename = os.getcwd() +"/cdr/cdr-"+ date.strftime("%Y%m%d") + "_" + f"{b:02d}" + ".csv"
-    #fh = open(filename, "w")
     with gzip.open(filename +'.gz', 'wt') as fh:
         for l in range(int(records_per_file)):
             #start= date + datetime.timedelta(minutes =random.randint(1,59))
@@ -274,13 +261,11 @@ for b in range(int(batches)):
             cdr = get_cdr(areacodes, countrycodes,start,x,y,z,w)
             fh.write(cdr + "\n")
     
-    #fh.close() 
     #cdrh =['session_id','calling_msisdn','called_msisdn', 'date_beg', 'date_end', 'duration','call_type', 'call_result', 'calling_net_type', 'radio_calling', 'cell_calling', 'lon_calling', 'lat_calling', 'called_net_type', 'radio_called', 'cell_called', 'lon_called', 'lat_called']
       
     #print (filename)
     #file = pd.read_csv(filename)
     #file.to_csv(filename, index=False)
-    #date += datetime.timedelta(hours=1)
 
 time_taken = datetime.datetime.now() - start_process
 print('Processed in: ',time_taken)
