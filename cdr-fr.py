@@ -133,12 +133,11 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
     
     if (probability(80)):
         call_type = 'Voice'
-        #duration = end - start
         duration = int((end - start).total_seconds())
     else:
         call_type = 'SMS'
         duration = 0
-    charge = str(   int(random.random() * 1000) / 100  )
+    charge = str( int(random.random() * 1000) / 100 )
 
     if (probability(80)):
         call_result = 'SUCCESS'
@@ -222,13 +221,14 @@ def get_cdr(areacodes, countrycodes, date,x,y,z,w):
     return cdr
 
 #============================================================================================================
-print ("Number of arguments:", len(sys.argv), "arguments")
-print ("Argument List:", str(sys.argv))
-#$ python3 test.py 20220312 100 24
-#Number of arguments: 4 arguments
-#Argument List: ['test.py', '20220312', '100', '24']
-
+#print ("Number of arguments:", len(sys.argv), "arguments")
+#print ("Argument List:", str(sys.argv))
+#$ python3 test.py 20220312 100 8
 date = datetime.datetime.now()
+if len(sys.argv) <= 1:
+  print("Usage: cdr-fr.py [date format YYYYmmdd] [nb records per file] [hour of the day]")
+  sys.exit(1)
+
 if len(sys.argv) >= 2:
   date = datetime.datetime.strptime(str(sys.argv[1]), "%Y%m%d")
 
@@ -236,9 +236,9 @@ records_per_file = 1000000
 if len(sys.argv) >= 3:
   records_per_file = sys.argv[2]
 
-batches = 24
+hour_start = 0
 if len(sys.argv) >= 4:
-  batches = sys.argv[3]
+  hour_start = sys.argv[3]
 
 x,y,z,w = get_network_type()
 
@@ -246,24 +246,15 @@ areacodes = get_area_codes ()
 countrycodes = get_country_codes()
 
 #============================================================================================================
-print("Generating "+str(batches)+" files of "+str(records_per_file)+" CDRs for "+date.strftime("%Y%m%d"))
+#print("Generating "+str(records_per_file)+" CDRs for "+date.strftime("%Y%m%d"))
 
 start_process = datetime.datetime.now()
-for b in range(int(batches)):
-    print ("Batch #", b)
-    filename = os.getcwd() +"/cdr/cdr-"+ date.strftime("%Y%m%d") + "_" + f"{b:02d}" + ".csv"
-    with gzip.open(filename +'.gz', 'wt') as fh:
-        for l in range(int(records_per_file)):
-            #start= date + datetime.timedelta(minutes =random.randint(1,59))
-            start = date.replace(hour=b, minute=random.randint(1,59))
-            cdr = get_cdr(areacodes, countrycodes,start,x,y,z,w)
-            fh.write(cdr + "\n")
-    
-    #cdrh =['session_id','calling_msisdn','called_msisdn', 'date_beg', 'date_end', 'duration','call_type', 'call_result', 'calling_net_type', 'radio_calling', 'cell_calling', 'lon_calling', 'lat_calling', 'called_net_type', 'radio_called', 'cell_called', 'lon_called', 'lat_called']
-      
-    #print (filename)
-    #file = pd.read_csv(filename)
-    #file.to_csv(filename, index=False)
+filename = os.getcwd() +"/cdr/cdr-"+ date.strftime("%Y%m%d") + "_" + hour_start.rjust(2, '0') + ".csv"
+with gzip.open(filename +'.gz', 'wt') as fh:
+  for l in range(int(records_per_file)):
+    start = date.replace(hour=int(hour_start), minute=random.randint(1,59))
+    cdr = get_cdr(areacodes, countrycodes,start,x,y,z,w)
+    fh.write(cdr + "\n")
 
 time_taken = datetime.datetime.now() - start_process
 print('Processed in: ',time_taken)
